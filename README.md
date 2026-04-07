@@ -118,19 +118,21 @@ pip install -r requirements.txt
 
 ### Run the Application
 
-Start the API server:
+Open **two terminals** inside the project folder:
 
+**Terminal 1 — API Server:**
 ```bash
 pnpm --filter @workspace/api-server run dev
 ```
 
-Start the frontend (in a second terminal):
-
+**Terminal 2 — Frontend:**
 ```bash
 pnpm --filter @workspace/security-toolkit run dev
 ```
 
-The dashboard will be available at `http://localhost:5173` (or the port shown in the terminal).
+The dashboard will be available at **`http://localhost:5173`**
+
+> The frontend automatically proxies all `/api` requests to the API server on port 8080, so no extra configuration is needed.
 
 ---
 
