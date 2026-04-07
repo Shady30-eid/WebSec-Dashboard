@@ -1,8 +1,5 @@
-import { useState } from "react";
 import { useLocation } from "wouter";
-import { Shield, Search, Radar, Lock, Zap, Globe, ArrowRight, Terminal, AlertTriangle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Shield, Radar, Lock, Zap, Globe, ArrowRight, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -60,12 +57,7 @@ const tools = [
 ];
 
 export default function Dashboard() {
-  const [url, setUrl] = useState("");
   const [, setLocation] = useLocation();
-
-  const handleQuickScan = (href: string) => {
-    setLocation(href);
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -85,29 +77,12 @@ export default function Dashboard() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 max-w-2xl mx-auto mb-4">
-          <div className="relative flex-1">
-            <Terminal className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="https://target-website.com"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              className="pl-10 h-13 bg-card border-border font-mono text-sm focus-visible:ring-primary text-foreground placeholder:text-muted-foreground"
-              data-testid="input-dashboard-url"
-            />
-          </div>
-        </div>
-        <p className="text-center text-xs text-muted-foreground mb-16">
-          Enter a target URL and select a tool below to begin scanning
-        </p>
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {tools.map((tool) => (
             <Card
               key={tool.href}
               className="bg-card border-border hover:border-border/80 cursor-pointer group transition-all duration-200 hover:shadow-lg hover:shadow-black/20 relative overflow-hidden"
-              onClick={() => handleQuickScan(tool.href)}
+              onClick={() => setLocation(tool.href)}
               data-testid={`card-tool-${tool.href.replace("/", "")}`}
             >
               <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${tool.bg}`} />
