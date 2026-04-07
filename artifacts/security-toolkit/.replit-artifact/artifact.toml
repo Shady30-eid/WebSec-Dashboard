@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Security Toolkit"
+version = "1.0.0"
+id = "artifacts/security-toolkit"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21818
+
+[services.development]
+run = "pnpm --filter @workspace/security-toolkit run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/security-toolkit", "run", "build" ]
+publicDir = "artifacts/security-toolkit/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21818"
+BASE_PATH = "/"

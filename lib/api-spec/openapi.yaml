@@ -3,13 +3,23 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Security Toolkit API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: waf
+    description: WAF testing operations
+  - name: recon
+    description: Reconnaissance operations
+  - name: headers
+    description: Security header audit
+  - name: speed
+    description: Page speed testing
+  - name: seo
+    description: SEO audit
 paths:
   /healthz:
     get:
@@ -24,6 +34,127 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /waf/test:
+    post:
+      operationId: runWafTest
+      tags: [waf]
+      summary: Run WAF test
+      description: Fires attack payloads against a target URL and checks WAF blocking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WafTestRequest"
+      responses:
+        "200":
+          description: WAF test results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WafTestResult"
+
+  /recon/scan:
+    post:
+      operationId: runReconScan
+      tags: [recon]
+      summary: Run reconnaissance scan
+      description: Identify tech stack, subdomains, and DNS records
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScanRequest"
+      responses:
+        "200":
+          description: Reconnaissance results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReconResult"
+
+  /headers/audit:
+    post:
+      operationId: runHeadersAudit
+      tags: [headers]
+      summary: Audit security headers
+      description: Check and grade HTTP security headers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScanRequest"
+      responses:
+        "200":
+          description: Header audit results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HeadersAuditResult"
+
+  /speed/test:
+    post:
+      operationId: runSpeedTest
+      tags: [speed]
+      summary: Run page speed test
+      description: Measure page load performance metrics
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScanRequest"
+      responses:
+        "200":
+          description: Speed test results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpeedTestResult"
+
+  /seo/audit:
+    post:
+      operationId: runSeoAudit
+      tags: [seo]
+      summary: Run SEO audit
+      description: Analyze page for SEO issues and opportunities
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScanRequest"
+      responses:
+        "200":
+          description: SEO audit results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SeoAuditResult"
+
+  /report/export:
+    post:
+      operationId: exportReport
+      tags: [health]
+      summary: Export scan report
+      description: Export a full HTML or JSON report of scan results
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExportRequest"
+      responses:
+        "200":
+          description: Exported report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExportResult"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +165,371 @@ components:
       required:
         - status
 
+    ScanRequest:
+      type: object
+      properties:
+        url:
+          type: string
+          description: Target URL to scan
+      required:
+        - url
+
+    WafTestRequest:
+      type: object
+      properties:
+        url:
+          type: string
+          description: Target URL to test
+        categories:
+          type: array
+          items:
+            type: string
+            enum: [sqli, xss, cmd_injection, path_traversal, xxe, ssrf, lfi, rfi]
+          description: Payload categories to test (all if omitted)
+      required:
+        - url
+
+    WafPayloadResult:
+      type: object
+      properties:
+        id:
+          type: string
+        category:
+          type: string
+        payload:
+          type: string
+        status:
+          type: string
+          enum: [blocked, passed, error, pending]
+        statusCode:
+          type: integer
+        responseTime:
+          type: integer
+          description: Response time in milliseconds
+        blocked:
+          type: boolean
+      required:
+        - id
+        - category
+        - payload
+        - status
+        - blocked
+
+    WafTestResult:
+      type: object
+      properties:
+        url:
+          type: string
+        totalPayloads:
+          type: integer
+        blocked:
+          type: integer
+        passed:
+          type: integer
+        errors:
+          type: integer
+        blockRate:
+          type: number
+        grade:
+          type: string
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/WafPayloadResult"
+        testedAt:
+          type: string
+      required:
+        - url
+        - totalPayloads
+        - blocked
+        - passed
+        - errors
+        - blockRate
+        - grade
+        - results
+        - testedAt
+
+    TechStackItem:
+      type: object
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+        version:
+          type: string
+        confidence:
+          type: integer
+      required:
+        - name
+        - category
+        - confidence
+
+    DnsRecord:
+      type: object
+      properties:
+        type:
+          type: string
+        value:
+          type: string
+        ttl:
+          type: integer
+      required:
+        - type
+        - value
+
+    SubdomainResult:
+      type: object
+      properties:
+        subdomain:
+          type: string
+        ip:
+          type: string
+        status:
+          type: string
+      required:
+        - subdomain
+        - status
+
+    ReconResult:
+      type: object
+      properties:
+        url:
+          type: string
+        domain:
+          type: string
+        ipAddress:
+          type: string
+        techStack:
+          type: array
+          items:
+            $ref: "#/components/schemas/TechStackItem"
+        subdomains:
+          type: array
+          items:
+            $ref: "#/components/schemas/SubdomainResult"
+        dnsRecords:
+          type: array
+          items:
+            $ref: "#/components/schemas/DnsRecord"
+        whois:
+          type: object
+          additionalProperties: true
+        scannedAt:
+          type: string
+      required:
+        - url
+        - domain
+        - techStack
+        - subdomains
+        - dnsRecords
+        - scannedAt
+
+    SecurityHeader:
+      type: object
+      properties:
+        name:
+          type: string
+        present:
+          type: boolean
+        value:
+          type: string
+        score:
+          type: integer
+        maxScore:
+          type: integer
+        grade:
+          type: string
+        recommendation:
+          type: string
+      required:
+        - name
+        - present
+        - score
+        - maxScore
+        - grade
+
+    HeadersAuditResult:
+      type: object
+      properties:
+        url:
+          type: string
+        grade:
+          type: string
+        score:
+          type: integer
+        maxScore:
+          type: integer
+        headers:
+          type: array
+          items:
+            $ref: "#/components/schemas/SecurityHeader"
+        scannedAt:
+          type: string
+      required:
+        - url
+        - grade
+        - score
+        - maxScore
+        - headers
+        - scannedAt
+
+    SpeedMetric:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: number
+        unit:
+          type: string
+        score:
+          type: integer
+        rating:
+          type: string
+          enum: [good, needs_improvement, poor]
+      required:
+        - name
+        - value
+        - unit
+        - score
+        - rating
+
+    SpeedTestResult:
+      type: object
+      properties:
+        url:
+          type: string
+        overallScore:
+          type: integer
+        grade:
+          type: string
+        metrics:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpeedMetric"
+        resourceSummary:
+          type: object
+          properties:
+            totalRequests:
+              type: integer
+            totalSize:
+              type: integer
+            htmlSize:
+              type: integer
+            cssSize:
+              type: integer
+            jsSize:
+              type: integer
+            imageSize:
+              type: integer
+          required:
+            - totalRequests
+            - totalSize
+        testedAt:
+          type: string
+      required:
+        - url
+        - overallScore
+        - grade
+        - metrics
+        - resourceSummary
+        - testedAt
+
+    SeoIssue:
+      type: object
+      properties:
+        type:
+          type: string
+        severity:
+          type: string
+          enum: [error, warning, info]
+        message:
+          type: string
+        element:
+          type: string
+      required:
+        - type
+        - severity
+        - message
+
+    SeoAuditResult:
+      type: object
+      properties:
+        url:
+          type: string
+        score:
+          type: integer
+        grade:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        canonicalUrl:
+          type: string
+        robotsMeta:
+          type: string
+        openGraph:
+          type: object
+          additionalProperties: true
+        twitterCard:
+          type: object
+          additionalProperties: true
+        structuredData:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        headings:
+          type: object
+          additionalProperties: true
+        issues:
+          type: array
+          items:
+            $ref: "#/components/schemas/SeoIssue"
+        internalLinks:
+          type: integer
+        externalLinks:
+          type: integer
+        brokenLinks:
+          type: integer
+        imagesWithoutAlt:
+          type: integer
+        scannedAt:
+          type: string
+      required:
+        - url
+        - score
+        - grade
+        - issues
+        - scannedAt
+
+    ExportRequest:
+      type: object
+      properties:
+        format:
+          type: string
+          enum: [html, json]
+        data:
+          type: object
+          additionalProperties: true
+        title:
+          type: string
+      required:
+        - format
+        - data
+
+    ExportResult:
+      type: object
+      properties:
+        format:
+          type: string
+        content:
+          type: string
+        filename:
+          type: string
+      required:
+        - format
+        - content
+        - filename
