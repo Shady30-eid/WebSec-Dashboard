@@ -18,6 +18,16 @@ const COMMON_SUBDOMAINS = [
   "sip", "dns2", "api", "cdn", "app", "staging", "dev2", "uat", "qa",
 ];
 
+const COMMON_TLDS = [
+  "com", "net", "org", "io", "co", "info", "biz", "edu", "gov", "int",
+  "co.uk", "co.au", "co.nz", "co.za", "co.in", "co.jp", "co.kr",
+  "de", "fr", "es", "it", "nl", "ru", "jp", "cn", "br", "au",
+  "ca", "mx", "in", "pl", "se", "no", "dk", "fi", "be", "at",
+  "ch", "nz", "sg", "hk", "tw", "kr", "ar", "za", "ie", "pt",
+  "gr", "hu", "cz", "ro", "tr", "ua", "pk", "ng", "eg", "ma",
+  "app", "dev", "tech", "ai", "cloud", "online", "site", "store",
+];
+
 async function detectTechStack(url: string, responseHeaders: Record<string, string>, htmlContent: string): Promise<Array<{name: string; category: string; version?: string; confidence: number}>> {
   const stack: Array<{name: string; category: string; version?: string; confidence: number}> = [];
   const headersLower = Object.fromEntries(Object.entries(responseHeaders).map(([k,v]) => [k.toLowerCase(), v.toLowerCase()]));
@@ -167,6 +177,87 @@ async function discoverSubdomains(domain: string): Promise<Array<{subdomain: str
   return results;
 }
 
+function extractBaseDomain(hostname: string): { name: string; currentTld: string } {
+  const parts = hostname.split(".");
+  if (parts.length <= 1) return { name: hostname, currentTld: "" };
+
+  const secondLevelTlds = ["co.uk", "co.au", "co.nz", "co.za", "co.in", "co.jp", "co.kr",
+    "com.au", "com.br", "com.mx", "com.ar", "com.sg", "com.hk", "com.tw"];
+
+  const last2 = parts.slice(-2).join(".");
+  if (secondLevelTlds.includes(last2) && parts.length >= 3) {
+    return { name: parts.slice(0, -2).join("."), currentTld: last2 };
+  }
+
+  return { name: parts.slice(0, -1).join("."), currentTld: parts[parts.length - 1]! };
+}
+
+async function findRelatedDomains(hostname: string): Promise<Array<{domain: string; ip?: string; registered: boolean; tld: string}>> {
+  const { name, currentTld } = extractBaseDomain(hostname);
+
+  const tldsToCheck = COMMON_TLDS.filter(tld => tld !== currentTld).slice(0, 40);
+
+  const checks = tldsToCheck.map(async (tld) => {
+    const candidate = `${name}.${tld}`;
+    try {
+      const addresses = await dns.resolve4(candidate);
+      return { domain: candidate, ip: addresses[0], registered: true, tld };
+    } catch {
+      return { domain: candidate, registered: false, tld };
+    }
+  });
+
+  const results = await Promise.allSettled(checks);
+  const found: Array<{domain: string; ip?: string; registered: boolean; tld: string}> = [];
+
+  for (const r of results) {
+    if (r.status === "fulfilled") {
+      found.push(r.value);
+    }
+  }
+
+  return found.sort((a, b) => {
+    if (a.registered && !b.registered) return -1;
+    if (!a.registered && b.registered) return 1;
+    return 0;
+  });
+}
+
+function buildOsintLinks(domain: string, ip: string): Array<{name: string; url: string; category: string; description: string}> {
+  const links = [
+    { name: "Shodan", url: `https://www.shodan.io/host/${ip}`, category: "IP Intelligence", description: "Open ports, services & vulnerabilities" },
+    { name: "Censys", url: `https://search.censys.io/hosts/${ip}`, category: "IP Intelligence", description: "Internet-wide scanning database" },
+    { name: "VirusTotal (IP)", url: `https://www.virustotal.com/gui/ip-address/${ip}`, category: "IP Intelligence", description: "Malicious activity & reputation" },
+    { name: "AbuseIPDB", url: `https://www.abuseipdb.com/check/${ip}`, category: "IP Intelligence", description: "IP abuse reports & blacklists" },
+    { name: "IPinfo", url: `https://ipinfo.io/${ip}`, category: "IP Intelligence", description: "Geolocation, ASN & hosting info" },
+    { name: "GreyNoise", url: `https://www.greynoise.io/viz/ip/${ip}`, category: "IP Intelligence", description: "Internet noise & scanner activity" },
+    { name: "ThreatBook", url: `https://threatbook.io/ip/${ip}`, category: "IP Intelligence", description: "Threat intelligence & IOCs" },
+    { name: "IPVoid", url: `https://www.ipvoid.com/ip-blacklist-check/?ip=${ip}`, category: "IP Intelligence", description: "Multi-blacklist checker" },
+
+    { name: "WHOIS", url: `https://who.is/whois/${domain}`, category: "Domain Intelligence", description: "Registrar, owner & registration dates" },
+    { name: "VirusTotal (Domain)", url: `https://www.virustotal.com/gui/domain/${domain}`, category: "Domain Intelligence", description: "Malicious URLs & domain reputation" },
+    { name: "SecurityTrails", url: `https://securitytrails.com/domain/${domain}/dns`, category: "Domain Intelligence", description: "Historical DNS & subdomain data" },
+    { name: "Crt.sh", url: `https://crt.sh/?q=${domain}`, category: "Domain Intelligence", description: "SSL certificate transparency logs" },
+    { name: "DNSDumpster", url: `https://dnsdumpster.com/`, category: "Domain Intelligence", description: "DNS recon & host discovery" },
+    { name: "URLScan.io", url: `https://urlscan.io/search/#domain%3A${domain}`, category: "Domain Intelligence", description: "Website scan history & screenshots" },
+    { name: "Wayback Machine", url: `https://web.archive.org/web/*/${domain}`, category: "Domain Intelligence", description: "Historical snapshots of the site" },
+    { name: "BuiltWith", url: `https://builtwith.com/${domain}`, category: "Domain Intelligence", description: "Detailed tech stack fingerprinting" },
+    { name: "Netcraft", url: `https://sitereport.netcraft.com/?url=${domain}`, category: "Domain Intelligence", description: "Hosting history & site report" },
+    { name: "DomainTools", url: `https://www.domaintools.com/research/whois/?query=${domain}`, category: "Domain Intelligence", description: "Domain history & WHOIS analysis" },
+
+    { name: "Shodan (Domain)", url: `https://www.shodan.io/search?query=hostname%3A${domain}`, category: "Attack Surface", description: "Exposed services linked to domain" },
+    { name: "FOFA", url: `https://en.fofa.info/result?qbase64=${Buffer.from(`domain="${domain}"`).toString("base64")}`, category: "Attack Surface", description: "Internet asset search engine" },
+    { name: "ZoomEye", url: `https://www.zoomeye.org/searchResult?q=${encodeURIComponent(`site:${domain}`)}`, category: "Attack Surface", description: "Cyberspace search engine" },
+    { name: "Google Dorks", url: `https://www.google.com/search?q=site%3A${domain}`, category: "Attack Surface", description: "Indexed pages & exposed content" },
+  ];
+
+  if (!ip) {
+    return links.filter(l => l.category !== "IP Intelligence");
+  }
+
+  return links;
+}
+
 router.post("/recon/scan", async (req, res) => {
   const parsed = RequestSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -205,11 +296,14 @@ router.post("/recon/scan", async (req, res) => {
     ipAddress = ips[0] ?? "";
   } catch {}
 
-  const [techStack, dnsRecords, subdomains] = await Promise.all([
+  const [techStack, dnsRecords, subdomains, relatedDomains] = await Promise.all([
     detectTechStack(url, responseHeaders, htmlContent),
     resolveDns(domain),
     discoverSubdomains(domain),
+    findRelatedDomains(domain),
   ]);
+
+  const osintLinks = buildOsintLinks(domain, ipAddress);
 
   return res.json({
     url,
@@ -218,6 +312,8 @@ router.post("/recon/scan", async (req, res) => {
     techStack,
     subdomains,
     dnsRecords,
+    relatedDomains,
+    osintLinks,
     scannedAt: new Date().toISOString(),
   });
 });
