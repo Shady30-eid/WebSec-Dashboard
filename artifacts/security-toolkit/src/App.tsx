@@ -24,7 +24,7 @@ const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard, color: "text-foreground" },
   { href: "/waf", label: "WAF Checker", icon: Shield, color: "text-emerald-400" },
   { href: "/recon", label: "Recon", icon: Radar, color: "text-sky-400" },
-  { href: "/subfinder", label: "SubFinder", icon: Search, color: "text-teal-400" },
+  { href: "/subfinder", label: "Subdomains", icon: Search, color: "text-teal-400" },
   { href: "/headers", label: "Security Headers", icon: Lock, color: "text-violet-400" },
   { href: "/speed", label: "Page Speed", icon: Zap, color: "text-yellow-400" },
   { href: "/seo", label: "SEO Audit", icon: Globe, color: "text-rose-400" },

@@ -26,7 +26,7 @@ const tools = [
   },
   {
     icon: Search,
-    title: "SubFinder",
+    title: "Subdomains",
     description: "Discover all active subdomains for any domain — DNS brute-force with HTTP status checks, like subfinder.",
     href: "/subfinder",
     color: "text-teal-400",

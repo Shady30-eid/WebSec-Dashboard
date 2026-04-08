@@ -101,7 +101,7 @@ export default function SubFinder() {
             <Search className="w-5 h-5 text-teal-400" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-foreground">SubFinder</h1>
+            <h1 className="text-2xl font-black text-foreground">Subdomains</h1>
             <p className="text-sm text-muted-foreground">Discover all active subdomains for any domain — like subfinder</p>
           </div>
         </div>
