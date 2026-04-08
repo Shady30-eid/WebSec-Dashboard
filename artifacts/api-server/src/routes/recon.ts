@@ -296,10 +296,9 @@ router.post("/recon/scan", async (req, res) => {
     ipAddress = ips[0] ?? "";
   } catch {}
 
-  const [techStack, dnsRecords, subdomains, relatedDomains] = await Promise.all([
+  const [techStack, dnsRecords, relatedDomains] = await Promise.all([
     detectTechStack(url, responseHeaders, htmlContent),
     resolveDns(domain),
-    discoverSubdomains(domain),
     findRelatedDomains(domain),
   ]);
 
@@ -310,7 +309,7 @@ router.post("/recon/scan", async (req, res) => {
     domain,
     ipAddress,
     techStack,
-    subdomains,
+    subdomains: [],
     dnsRecords,
     relatedDomains,
     osintLinks,

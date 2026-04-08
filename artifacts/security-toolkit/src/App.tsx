@@ -2,11 +2,12 @@ import { Switch, Route, Router as WouterRouter, Link, useLocation } from "wouter
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Shield, Radar, Lock, Zap, Globe, LayoutDashboard, Menu, X } from "lucide-react";
+import { Shield, Radar, Lock, Zap, Globe, LayoutDashboard, Menu, X, Search } from "lucide-react";
 import { useState } from "react";
 import Dashboard from "@/pages/Dashboard";
 import WafChecker from "@/pages/WafChecker";
 import Recon from "@/pages/Recon";
+import SubFinder from "@/pages/SubFinder";
 import Headers from "@/pages/Headers";
 import Speed from "@/pages/Speed";
 import Seo from "@/pages/Seo";
@@ -23,6 +24,7 @@ const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard, color: "text-foreground" },
   { href: "/waf", label: "WAF Checker", icon: Shield, color: "text-emerald-400" },
   { href: "/recon", label: "Recon", icon: Radar, color: "text-sky-400" },
+  { href: "/subfinder", label: "SubFinder", icon: Search, color: "text-teal-400" },
   { href: "/headers", label: "Security Headers", icon: Lock, color: "text-violet-400" },
   { href: "/speed", label: "Page Speed", icon: Zap, color: "text-yellow-400" },
   { href: "/seo", label: "SEO Audit", icon: Globe, color: "text-rose-400" },
@@ -111,6 +113,7 @@ function Layout() {
             <Route path="/" component={Dashboard} />
             <Route path="/waf" component={WafChecker} />
             <Route path="/recon" component={Recon} />
+            <Route path="/subfinder" component={SubFinder} />
             <Route path="/headers" component={Headers} />
             <Route path="/speed" component={Speed} />
             <Route path="/seo" component={Seo} />

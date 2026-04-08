@@ -1,5 +1,5 @@
 import { useLocation } from "wouter";
-import { Shield, Radar, Lock, Zap, Globe, ArrowRight, AlertTriangle } from "lucide-react";
+import { Shield, Radar, Lock, Zap, Globe, ArrowRight, AlertTriangle, Search } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -17,12 +17,22 @@ const tools = [
   {
     icon: Radar,
     title: "Reconnaissance",
-    description: "Identify tech stack, detect CMS and frameworks, discover subdomains, and inspect DNS records.",
+    description: "Identify tech stack, detect CMS and frameworks, inspect DNS records, and gather OSINT intelligence.",
     href: "/recon",
     color: "text-sky-400",
     bg: "bg-sky-500/10",
     border: "border-sky-500/30",
     badge: "Passive",
+  },
+  {
+    icon: Search,
+    title: "SubFinder",
+    description: "Discover all active subdomains for any domain — DNS brute-force with HTTP status checks, like subfinder.",
+    href: "/subfinder",
+    color: "text-teal-400",
+    bg: "bg-teal-500/10",
+    border: "border-teal-500/30",
+    badge: "DNS Recon",
   },
   {
     icon: Lock,

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Radar, Server, Globe, Database, CheckCircle, XCircle, ExternalLink, Search, Shield, Target } from "lucide-react";
+import { Radar, Server, Globe, Database, ExternalLink, Search, Shield, Target, CheckCircle, XCircle } from "lucide-react";
 import { URLInputBar } from "@/components/shared/URLInputBar";
 import { ExportButtons } from "@/components/shared/ExportButtons";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -172,62 +172,30 @@ export default function Recon() {
             </CardContent>
           </Card>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* DNS Records */}
-            <Card className="bg-card border-border">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                  <Database className="w-4 h-4" />DNS Records ({result.dnsRecords.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                {result.dnsRecords.length === 0 ? (
-                  <p className="text-sm text-muted-foreground px-4 py-3">No DNS records found</p>
-                ) : (
-                  <div className="divide-y divide-border/50">
-                    {result.dnsRecords.map((record, i) => (
-                      <div key={i} className="px-4 py-2.5 flex items-start gap-3">
-                        <Badge variant="outline" className="text-xs font-mono text-sky-400 border-sky-500/30 bg-sky-500/5 shrink-0 mt-0.5">
-                          {record.type}
-                        </Badge>
-                        <span className="text-sm font-mono text-muted-foreground break-all">{record.value}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Subdomains */}
-            <Card className="bg-card border-border">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                  <Globe className="w-4 h-4" />Subdomains ({result.subdomains.length} active)
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                {result.subdomains.length === 0 ? (
-                  <p className="text-sm text-muted-foreground px-4 py-3">No active subdomains discovered</p>
-                ) : (
-                  <div className="divide-y divide-border/50 max-h-64 overflow-auto">
-                    {result.subdomains.map((sub, i) => (
-                      <div key={i} className="px-4 py-2.5 flex items-center justify-between">
-                        <div>
-                          <span className="text-sm font-mono text-foreground">{sub.subdomain}</span>
-                          {sub.ip && <span className="text-xs text-muted-foreground ml-2 font-mono">({sub.ip})</span>}
-                        </div>
-                        {sub.status === "active" ? (
-                          <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                        ) : (
-                          <XCircle className="w-4 h-4 text-red-400 shrink-0" />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+          {/* DNS Records */}
+          <Card className="bg-card border-border">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                <Database className="w-4 h-4" />DNS Records ({result.dnsRecords.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              {result.dnsRecords.length === 0 ? (
+                <p className="text-sm text-muted-foreground px-4 py-3">No DNS records found</p>
+              ) : (
+                <div className="divide-y divide-border/50">
+                  {result.dnsRecords.map((record, i) => (
+                    <div key={i} className="px-4 py-2.5 flex items-start gap-3">
+                      <Badge variant="outline" className="text-xs font-mono text-sky-400 border-sky-500/30 bg-sky-500/5 shrink-0 mt-0.5">
+                        {record.type}
+                      </Badge>
+                      <span className="text-sm font-mono text-muted-foreground break-all">{record.value}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Related Domains */}
           {result.relatedDomains && result.relatedDomains.length > 0 && (

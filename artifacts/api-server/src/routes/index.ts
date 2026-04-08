@@ -6,6 +6,7 @@ import headersRouter from "./headers";
 import speedRouter from "./speed";
 import seoRouter from "./seo";
 import reportRouter from "./report";
+import subfinderRouter from "./subfinder";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,6 @@ router.use(headersRouter);
 router.use(speedRouter);
 router.use(seoRouter);
 router.use(reportRouter);
+router.use(subfinderRouter);
 
 export default router;
