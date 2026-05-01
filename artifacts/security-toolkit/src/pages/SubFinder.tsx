@@ -13,6 +13,7 @@ interface SubdomainResult {
   httpStatus?: number;
   httpStatusText?: string;
   isWildcard: boolean;
+  source: "dns-bruteforce" | "hackertarget";
 }
 
 interface ScanResult {
@@ -22,6 +23,8 @@ interface ScanResult {
   wildcardIp: string | null;
   totalFound: number;
   realFound: number;
+  ctFound: number;
+  bruteFound: number;
   subdomains: SubdomainResult[];
   scannedAt: string;
 }
@@ -157,11 +160,13 @@ export default function SubFinder() {
       {result && (
         <div className="space-y-4">
           {/* Summary */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {[
               { label: "Domain", value: result.domain, color: "text-foreground" },
               { label: "Main IP", value: result.mainIp || "—", color: "text-sky-400" },
-              { label: "Subdomains Found", value: result.realFound.toString(), color: "text-teal-400" },
+              { label: "Total Found", value: result.realFound.toString(), color: "text-teal-400" },
+              { label: "Passive Recon", value: result.ctFound?.toString() ?? "—", color: "text-violet-400" },
+              { label: "From Wordlist", value: result.bruteFound?.toString() ?? "—", color: "text-orange-400" },
               { label: "Wildcard DNS", value: result.wildcardDetected ? "Detected" : "None", color: result.wildcardDetected ? "text-yellow-400" : "text-emerald-400" },
             ].map(({ label, value, color }) => (
               <Card key={label} className="bg-card border-border">
@@ -230,6 +235,9 @@ export default function SubFinder() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-sm font-mono font-semibold text-foreground">{sub.subdomain}</span>
+                          {sub.source === "hackertarget" && (
+                            <Badge variant="outline" className="text-xs text-violet-400 border-violet-500/30 bg-violet-500/5">passive</Badge>
+                          )}
                           {sub.isWildcard && (
                             <Badge variant="outline" className="text-xs text-yellow-400 border-yellow-500/30 bg-yellow-500/5">wildcard</Badge>
                           )}
